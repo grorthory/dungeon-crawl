@@ -9,9 +9,21 @@ class GameMap:
         self.width, self.height = width, height
         self.tiles = np.full((width, height), fill_value=tile_types.wall, order="F")
 
+        self.visible = np.full((width, height), fill_value=False, order="F") #Tiles player can currently see
+        self.explored = np.full((width, height), fill_value=False, order="F") #Tiles player previously explored
     def in_bounds(self, x: int, y:int) -> bool:
         """Return True if x and y are inside of map bounds"""
         return 0 <= x < self.width and 0 <= y < self.height
     
     def render(self, console: Console) -> None:
-        console.rgb[0:self.width, 0:self.height] = self.tiles["dark"]
+        """
+        Renders the map.
+        If a tile is in "visible" array, draw it with the "light" colors.
+        If it isn't but it is in "explored" array, draw it with "dark" colors.
+        Otherwise, default is "SHROUD".
+        """
+        console.rgb[0:self.width, 0:self.height] = np.select(
+            condlist=[self.visible, self.explored],
+            choicelist=[self.tiles["light"], self.tiles["dark"]],
+            default=tile_types.SHROUD
+        )
