@@ -18,8 +18,6 @@ class EventHandler(tcod.event.EventDispatch[Action]):
             if action is None:
                 continue
 
-            #action.perform()
-
             self.engine.handle_turns(action)
     
     def ev_quit(self, event: tcod.event.Quit) -> Optional[Action]:

@@ -1,5 +1,5 @@
 from __future__ import annotations
-
+import time
 from typing import TYPE_CHECKING
 
 from tcod.context import Context
@@ -32,16 +32,27 @@ class Engine:
 
     def handle_turns(self, action) -> None:
         print("##New round!##")
-        for entity in self.game_map.entities:
+        entities_list = list(self.game_map.entities)
+        entities_sorted = sorted(entities_list, key=lambda entity: entity.fighter.action_points, reverse=True)
+        #sort enemies by remaining AP
+        for entity in entities_sorted:
+            entity.fighter.action_points += entity.fighter.speed * 10
+        for entity in entities_sorted:
+
             if entity.ai:
                 #player also has attribute AI.
-                if entity == self.player:
-                    action.perform()
-                elif entity != self.player:
-                    entity.ai.perform()
-                entity.fighter.action_points = entity.fighter.speed * 10
-                print(f'The {entity.name} takes its turn. AP: {entity.fighter.action_points}')
-                self.update_fov() #Update FOV after each entity's turn
+                
+                #TODO: move action cost to individual actions in actions.py
+                while(entity.fighter.action_points >= 1000):    
+                    if entity == self.player:
+                        action.perform()
+                        entity.fighter.action_points -= 1000
+                    elif entity != self.player:
+                        entity.ai.perform()
+                        entity.fighter.action_points -= 1000
+                    print(f'The {entity.name} takes its turn. AP: {entity.fighter.action_points}')
+                    #time.sleep(.01)
+                    self.update_fov() #Update FOV after each entity's turn
 
     def render(self, console: Console, context: Context) -> None:
         self.game_map.render(console)
