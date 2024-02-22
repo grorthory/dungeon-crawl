@@ -30,6 +30,19 @@ class Engine:
         #if a tile is "visible" it should be added to "explored".
         self.game_map.explored |= self.game_map.visible
 
+    def handle_turns(self, action) -> None:
+        print("##New round!##")
+        for entity in self.game_map.entities:
+            if entity.ai:
+                #player also has attribute AI.
+                if entity == self.player:
+                    action.perform()
+                elif entity != self.player:
+                    entity.ai.perform()
+                entity.fighter.action_points = entity.fighter.speed * 10
+                print(f'The {entity.name} takes its turn. AP: {entity.fighter.action_points}')
+                self.update_fov() #Update FOV after each entity's turn
+
     def render(self, console: Console, context: Context) -> None:
         self.game_map.render(console)
 
